@@ -11,22 +11,17 @@ winter 2025 class content:
 
 - Class 07: [Intro to machine learning](https://github.com/kmostoller1/bggn213_github/blob/main/Class07/class07.pdf)
 
-- Class 08: Unsupervised leanring mini project
+- Class 08: [Unsupervised leanring mini project](https://github.com/kmostoller1/bggn213_github/blob/main/Class08/Miniproject08.pdf)
 
-- Class 09: Halloween candy mini project
+- Class 09: [Halloween candy mini project](https://github.com/kmostoller1/bggn213_github/blob/main/class09/halloweencandy.pdf)
 
-- Class 10: Structural Bioinformatics
+- Class 10: [Structural Bioinformatics](https://github.com/kmostoller1/bggn213_github/blob/main/Class10/Class10.pdf)
 
-- Class 11: Genome Informatics
+- Class 11: [Genome Informatics](https://github.com/kmostoller1/bggn213_github/blob/main/class11/class11.pdf)
 
-- Class 12: Alpha fold and structural prediction
+- Class 12: [Alpha fold and structural prediction](https://github.com/kmostoller1/bggn213_github/blob/main/Class12/AlphaFold%20Analysis%20class%2012.pdf)
 
-- Class 13: Transcriptomics, RNA-Seq analysis, and the interpretation of gene lists
+- Class 13: [Transcriptomics, RNA-Seq analysis, and the interpretation of gene lists](https://github.com/kmostoller1/bggn213_github/blob/main/Class%2013/Class-13.pdf)
 
-- Class 14: RNA-Seq mini project
+- Class 14: [RNA-Seq mini project](https://github.com/kmostoller1/bggn213_github/blob/main/Class%2014/Class-14.pdf)
 
-- Class 12:
-
-- Class 13:
-
-- Class 14:
