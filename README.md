@@ -8,3 +8,5 @@ winter 2025 class content:
 - Class 05: Data viz with ggplot2
 
 - Class 06: [R Functions](https://github.com/kmostoller1/bggn213_github/blob/main/Class06/Class6.pdf)
+
+- Class 07: [Intro to machine learning](https://github.com/kmostoller1/bggn213_github/blob/main/Class07/class07.pdf)
