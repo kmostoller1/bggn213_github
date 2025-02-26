@@ -1,0 +1,36 @@
+---
+title: "HW6"
+author: Katie Mostoller
+format: pdf
+---
+
+> This function takes pdb files (files from the protien data bank that contain information about the 3D structure of protiens) and renders a plot of B-factor values   
+
+```{r}
+# Load the bio3d library
+library(bio3d)
+
+# Here is the function that will turn pdb protein structure files into B-factor plots
+  Analyze_proteins <- function(pdb_file) {
+    
+# Read the PDB file. The pdb file is the input for this function.
+  pdb <- read.pdb(pdb_file)
+  
+# Trim to the specified chain
+  pdb.chainA <- trim.pdb(pdb, chain = "A", elety = "CA")
+  
+# Identify B-factors
+  pdb.b <- pdb.chainA$atom$b
+  
+# Plot B-factors. This is the output of the function
+  plotb3(pdb.b, sse=pdb.chainA, typ="l", ylab="Bfactor")
+
+}
+```
+
+```{r}
+# Test out the function on a pdb file
+  Analyze_proteins("4AKE")
+```
+
+

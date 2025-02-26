@@ -1,0 +1,229 @@
+---
+title: "Class 6: R functions"
+author: "Katie Mostoller (A17259578)"
+format: pdf
+---
+
+Today we are going to get more exposure to functions in R. 
+
+Let's start with a silly simple function to add some numbers:
+
+```{r}
+add <- function(x,y=0,z=0) {
+x + y + z
+}
+```
+
+>Can we use this function?
+
+```{r}
+add(x=1,y=1)
+```
+
+```{r}
+add(x=1)
+```
+
+
+```{r}
+log(10)
+```
+```{r}
+log(10, base=10)
+```
+
+
+```{r}
+add(100, 1, 200)
+```
+Let's have a look at the `sample()` function.
+>What does it do?
+
+The sample function in R randomly selects elements from a vector. It has two main uses:
+
+```{r}
+sample(1:10, size=5)
+```
+
+```{r}
+sample(1:10, size=1)
+```
+
+What if I want 11 things taken from my vector 1 to 10
+```{r}
+sample(1:10, size=11, replace=T)
+```
+### Side-note:
+```{r}
+seq(5, 50, by=3)
+```
+
+## Generate DNA sequences
+
+
+>Write a function to generate a random nucleotide sequence of a user specified size/length.
+
+```{r}
+x <- c("A", "C", "G", "T")
+sample(x, size=9, replace = T)
+```
+
+All functions in R have at least 3 things:
+- a **name** (we pick this "generate_dna")
+- input **arguments** ("length" of the output sequence)
+- the **body** (where the work gets done, line by line)
+
+```{r}
+generate_dna <- function(length) {x <- c("A", "C", "G", "T")
+ans <- sample(x, size=length, replace = T)}
+```
+
+```{r}
+generate_dna(12)
+```
+
+
+I would like a function to print out a single element vector "GATGATCT". To help with this I can maybe use the `paste()` function.
+
+```{r}
+s <- generate_dna(10)
+paste(s, collapse = "")
+```
+```{r}
+generate_dna <- function(length) {
+# The nucleotides to draw/sample from
+x <- c("A", "C", "G", "T")
+# Draw n=length nucleotides to make our sequence
+ans <- sample(x, size=length, replace = T)
+# Concatenate the nucleotides
+ans <- paste(ans, collapse = "")
+return(ans)}
+```
+
+```{r}
+generate_dna(12)
+```
+
+I want the ability to switch between these two output formats. I can do this with an extra input argument to my function that controls this with TRUE/FALSE.
+
+
+```{r}
+generate_dna <- function(length, collapse=FALSE) {
+# The nucleotides to draw/sample from
+x <- c("A", "C", "G", "T")
+# Draw n=length nucleotides to make our sequence
+ans <- sample(x, size=length, replace = T)
+# Concatenate the nucleotides
+if(collapse) {
+ans <- paste(ans, collapse = "")
+}
+return(ans)}
+```
+
+```{r}
+generate_dna(12)
+```
+
+```{r}
+generate_dna(12, collapse = TRUE)
+```
+
+> Add the ability to put a message if the use is sad. Control this with a new input parameter called `mood`
+
+```{r}
+generate_dna <- function(length, collapse=FALSE, mood=FALSE) {
+# The nucleotides to draw/sample from
+x <- c("A", "C", "G", "T")
+# Draw n=length nucleotides to make our sequence
+ans <- sample(x, size=length, replace = T)
+# Concatenate the nucleotides
+if(collapse) {
+ans <- paste(ans, collapse = "")
+}
+# 
+if(mood) {
+cat("Cheer up we are nearly done")  
+}
+return(ans)}
+```
+```{r}
+generate_dna(12, collapse=TRUE, mood=TRUE)
+```
+
+
+>Write a protein sequence generating function
+
+```{r}
+generate_protein <- function(length, collapse = TRUE) {
+# amino acids to draw from
+aa_codes <- c("A", "C", "D", "E", "F", 
+              "G", "H", "I", "K", "L", 
+              "M", "N", "P", "Q", "R", 
+              "S", "T", "V", "W", "Y")
+# Draw n=length amino acids to make our sequences
+ans <- sample(aa_codes, size = length, replace = T)
+# Concatenate amino acids
+if(collapse) {
+ans <- paste(ans, collapse = "")
+}
+return(ans)
+}
+```
+
+```{r}
+generate_protein(12)
+```
+
+>Generate protein sequences from length 6-12 amino acids long
+
+```{r}
+generate_protein(6)
+generate_protein(7)
+generate_protein(8)
+generate_protein(9)
+generate_protein(10)
+generate_protein(11)
+generate_protein(12)
+```
+
+```{r}
+#generate_protein(6:12)
+```
+This does not work because my function is not vectorized!
+We can use `sapply()` to fix this. The `sapply()` function applies a function to each element of a vector/list and simplifies the output
+
+```{r}
+sapply(6:12, generate_protein, collapse=T)
+```
+
+
+> Are any of these sequences unique in the sense that they have never been found in nature?
+
+To make this accessible lets get our sequences in FASTA format. FASTA format looks like this:
+>id.6
+GTAGKRLP
+>id.7
+KRTYFREGG
+
+```{r}
+myseqs <- sapply(6:12, generate_protein, collapse=T)
+myseqs
+```
+
+The functions `paste()` and `cat()` will help here
+
+```{r}
+cat(paste(">id.", 6:12, "\n", myseqs, "\n", sep = ""), sep="")
+```
+
+```{r}
+library(bio3d)
+
+myseqs.vec <- sapply(6:12, generate_protein, collapse=T)
+
+x <- as.matrix(myseqs.vec)
+
+x
+```
+
+Using a blast search, the amino acid sequences start being unique at length 10.

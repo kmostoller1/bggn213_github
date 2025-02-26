@@ -1,0 +1,77 @@
+---
+title: "Class06HW"
+author: Katie Mostoller
+format: html
+---
+
+> Q1. Write a function grade() to determine an overall grade from a vector of student homework
+assignment scores dropping the lowest single score. If a student misses a homework (i.e. has an
+NA value) this can be used as a score to be potentially dropped.
+
+```{r}
+grade <- function(scores) {
+# Convert NA scores to zero value
+scores[is.na(scores)] <- 0
+# Sum the scores while removing the lowest single score
+sum(sort(scores)[-1])
+  }
+```
+
+> Q2. Using your grade() function and the supplied gradebook, Who is the top scoring student
+overall in the gradebook?
+
+```{r}
+# Make vectors for each student
+student_1 <- c(100, 73 ,100, 88, 79)
+grade(student_1)
+student_2 <- c(85, 64, 78, 89, 78)
+grade(student_2)
+student_3 <- c(83, 69, 77, 100, 77)
+grade(student_3)
+student_4 <- c(88,	NA,	73,	100,	76)
+grade(student_4)
+student_5 <- c(88,	100,	75,	86,	79)
+grade(student_5)
+student_6 <- c(89,	78,	100,	89,	77)
+grade(student_6)
+student_7 <- c(89,	100,	74,	87,	100)
+grade(student_7)
+student_8 <- c(89,	100,	76,	86,	100)
+grade(student_8)
+student_9 <- c(86,	100,	77,	88,	77)
+grade(student_9)
+student_10 <- c(89,	72,	79,	NA,	76)
+grade(student_10)
+student_11<- c(82,	66,	78,	84,	100)
+grade(student_11)
+student_12<- c(100,	70,	75,	92,	100)
+grade(student_12)
+student_13<- c(89,	100,	76,	100,	80)
+grade(student_13)
+student_14<- c(85,	100,	77,	89,	76)
+grade(student_14)
+student_15<- c(85,	65,	76,	89,	NA)
+grade(student_15)
+student_16<- c(92,	100,	74,	89,	77)
+grade(student_16)
+student_17<- c(88,	63,	100,	86,	78)
+grade(student_17)
+student_18<- c(91,	NA,	100,	87,	100)
+grade(student_18)
+student_19<- c(91,	68,	75,	86,	79)
+grade(student_19)
+student_20<- c(91,	68,	76,	88,	76)
+grade(student_20)
+```
+
+
+
+```{r}
+all_scores <- c(367, 330, 337, 337, 353, 356, 376, 375, 351, 316, 344, 367, 369, 351, 315, 358, 352, 378, 331, 331)
+max(all_scores)
+```
+>The maximum score is 378 from student_18
+
+>Q3. From your analysis of the gradebook, which homework was toughest on students (i.e. obtained the lowest scores overall?
+
+

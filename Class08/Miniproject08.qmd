@@ -1,0 +1,286 @@
+---
+title: "Class08MiniProject"
+author: "Katie Mostoller PID A17259578"
+toc: true
+format: pdf
+---
+
+Today we wiill practice applying our PCA and clustering methods from the last class on some breast cancer FNA data. 
+
+## Get the dataset into R
+To get the csv file into R, right click on the web link to the file, select "save link as" and save the file into the folder where this R project is. Use `row.names = 1` to make the patient identifier the name of the row
+
+```{r}
+wisc.df <- read.csv("WisconsinCancer.csv", row.names=1)
+head(wisc.df)
+```
+## Dataset basic exploration
+>Q. How many samples/patients are in this dataset?
+
+There are `r nrow(wisc.df)` samples in the dataset (example of in line code)
+
+```{r}
+nrow(wisc.df)
+```
+
+>Q. How many cancer/non-cancer diagnosis samples are there?
+
+```{r}
+sum(wisc.df$diagnosis == "M")
+```
+
+The `table()` function is a super useful utility for counting up the number of observations of each type
+
+```{r}
+table(wisc.df$diagnosis)
+```
+
+
+>Q. How many columns/dimensions are there?
+
+```{r}
+ncol(wisc.df)
+```
+
+>Q. How many columns are suffixed with "_mean"?
+
+```{r}
+colnames(wisc.df)
+```
+
+The `grep()` function can help us find pattern matches
+
+```{r}
+x <- grep("_mean", colnames(wisc.df))
+length(x)
+```
+## Tidy to remove diagnosis
+
+Save a vector of this expert diagnosis for later and remove it from the data to undergo clustering, PCA etc....
+```{r}
+diagnosis <- wisc.df$diagnosis
+```
+
+```{r}
+wisc.data <- wisc.df[,-1]
+```
+
+
+## Cluster the dataset
+Let's try a `hclust()`. 
+
+```{r}
+hc.raw <- hclust(dist(wisc.data))
+plot(hc.raw)
+abline(h=4000, col="blue")
+```
+
+To get some clusters out of this I can "cut" the tree at a given height
+
+```{r}
+grps <- cutree(hc.raw, h=4000)
+table(grps)
+```
+
+To see the correspondance of our cluster `grps` with the expert `diagnosis` I can use `table()`
+
+```{r}
+table(grps, diagnosis)
+```
+
+That is not that useful of a clustering result.....
+
+## Principal Component Analysis (PCA)
+
+Scaling data before analysis is often critical. 
+
+Side-note: The default for `prcomp()` is `scale=FALSE`
+
+```{r}
+head(mtcars)
+```
+
+```{r}
+colMeans(mtcars)
+```
+
+```{r}
+apply(mtcars, 2, sd)
+```
+
+```{r}
+pc.noscale <-  prcomp(mtcars, scale=FALSE)
+pc.scale <- prcomp(mtcars, scale=TRUE)
+```
+
+Let's look at the laodings first:
+
+```{r}
+head(pc.noscale$rotation)
+```
+
+
+```{r}
+library(ggplot2)
+ggplot(pc.noscale$rotation) + aes(PC1, rownames(pc.noscale$rotation)) + geom_col()
+```
+
+```{r}
+ggplot(pc.scale$rotation) + aes(PC1, rownames(pc.scale$rotation)) + geom_col()
+```
+
+The main PC result figure is often called a "score plot" or "PC plot" or "PC1 vs PC2 plot"
+
+```{r}
+ggplot(pc.noscale$x) + aes(PC1, PC2, label=rownames(pc.noscale$x)) + geom_point() + geom_label()
+```
+
+```{r}
+ggplot(pc.scale$x) + aes(PC1, PC2, label=rownames(pc.scale$x)) + geom_point() + geom_label()
+```
+What does scaling actually do??
+
+```{r}
+x <- scale(mtcars)
+round(colMeans(x))
+round(apply(x, 2, sd))
+```
+
+> **Key-point** Generally we want to scale our data before analysis to avoid being misled due to our data having different measurment units.
+
+## Breast Cancer PCA 
+```{r}
+pca <- prcomp(wisc.data, scale=T)
+```
+see how well we are doing
+
+```{r}
+summary(pca)
+```
+
+Our PC plot
+
+```{r}
+ggplot(pca$x) + aes(PC1, PC2, col = diagnosis) + geom_point()
+```
+
+>Q. How many PCs capture 80% of the original variance in the dataset?
+
+```{r}
+summary(pca)
+```
+
+```{r}
+plot(pca)
+```
+
+
+>Q. Use ggplot to plot a "scree-plot" of the variance per PC
+
+```{r}
+attributes(pca)
+```
+
+
+W can extract the sdev and figure out the variance
+
+```{r}
+v <- pca$sdev^2
+sum(v)
+```
+the proportion of variance captured in each PC
+```{r}
+round(v/sum(v), 2)
+```
+
+cumulative variance captured
+
+```{r}
+cumsum(v/sum(v))
+```
+
+```{r}
+which(cumsum(v/sum(v)) > 0.8)
+```
+
+
+```{r}
+library(factoextra)
+fviz_eig(pca, addlabels = TRUE)
+```
+
+## Combine PCA and clustering
+
+We saw earlier that clustering the raw data alone did not provide useful results.
+
+We can use our new PC variables (our PCs) as a basis for clustering. We can use our $x PC scores
+
+```{r}
+hc.pca <- hclust(dist(pca$x[,1:2]), method="ward.D2")
+plot(hc.pca)
+abline(h=70, col = "blue")
+```
+
+>Q. Does your clustering help separate cancer from non-cancer samples (i.e. diagnosis "M" vs "B")?
+
+
+```{r}
+grps <- cutree(hc.pca, h=70)
+table(grps, diagnosis)
+```
+```{r}
+table(diagnosis)
+```
+Positive cancer samples "M"
+Negativenon-cancer "B"
+
+
+True is our cluster grp 1
+False is our cluster grp2
+
+>Q. How many true positives do we have?
+
+```{r}
+sens <- table(grps, diagnosis)
+sens[1,2]
+```
+
+
+>Q. How many false positives fo we have?
+
+```{r}
+sens[2,2]
+```
+
+
+Sensitivity: TP/(TP+FN)
+Specificity: TN/(TN+FN)
+
+
+## Prediction with our PCA model
+
+We can take new data and project it onto our new variables (PCs)
+
+read the UofM data
+```{r}
+url <- "https://tinyurl.com/new-samples-CSV"
+new <- read.csv(url)
+```
+
+Peojection
+
+```{r}
+npc <- predict(pca, newdata=new)
+```
+
+Base R plot
+
+```{r}
+plot(pca$x[,1:2], col=grps)
+
+# add the new points
+points(npc[,1], npc[,2], col="blue", pch=16, cex=3)
+text(npc[,1], npc[,2], c(1,2), col="white")
+```
+
+Patient 2 is inside the malignant cluster

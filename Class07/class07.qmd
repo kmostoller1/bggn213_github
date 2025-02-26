@@ -1,0 +1,233 @@
+---
+title: "Class07"
+author: Katie Mostoller A17259578
+format: pdf
+---
+
+Today we will delve into unsupervised machine learning with an initial focus on clustering and dimensionality reduction.
+
+Let's starts by making up some data to cluster.
+The `rnorm()` function can help us here.
+
+```{r}
+hist(rnorm(3000))
+```
+
+
+Lets get some data centeres at 3,-3
+
+
+```{r}
+#Combine 30 +3 values with 30 -3 values
+
+x <- c(rnorm(30, mean = 3), rnorm(30, mean = -3))
+
+# Bind these values together
+z <- cbind(x = x, y = rev(x))
+head(z)
+```
+```{r}
+plot(z)
+```
+
+## K-means
+Now we can see how K-means clusters this data. The main function for K-means clustering in "base R" is called `kmeans()`
+
+```{r}
+km <- kmeans(z, center = 2)
+km
+```
+```{r}
+attributes(km)
+```
+> Q. What size is each cluster?
+
+```{r}
+km$size
+```
+
+> Q. The cluster membership vector (i.e. the answer: cluster to which each point is allocated)
+
+```{r}
+km$cluster
+```
+> Cluster centers
+
+```{r}
+km$centers
+```
+
+> Q. Make a results figure, i.e. plot the data `z` colored by cluster membership and show the cluster centers.
+
+```{r}
+plot(z, col = "blue")
+```
+
+```{r}
+plot(z, col = 6)
+```
+```{r}
+# Make each cluster a different color
+plot(z, col = km$cluster)
+
+# Add a point that represents the center of each cluster to the plot
+points(km$centers, col = "blue", pch = 15)
+```
+> Q. Re-run your k-means clsutering and ask for 4 cluster and plot the results as above
+
+```{r}
+km4 <- kmeans(z, center = 4)
+plot(z, col = km4$cluster)
+points(km4$centers, col = "blue", pch = 15)
+```
+
+## Hierarchical Clustering
+
+The main "base R" function for this is `hclust()`. Unlike `kmeans()` you can't just give your dataset as input, you need to provide a distance matrix. 
+
+We can us the `dist()` function for this
+
+```{r}
+d <- dist(z)
+```
+
+```{r}
+hc <- hclust(d)
+hc
+```
+
+There is a custom `plot()` for hclust objects. Let's see it.
+
+```{r}
+plot(hc)
+abline(h=8, col = "red")
+```
+
+The function to extract clusters/groups from an hclust object/tree is called `cutree()`. 
+
+```{r}
+grps <- cutree(hc, h = 8)
+grps
+```
+> Q. Plot data with hlcust clusters
+
+```{r}
+plot(z, col = grps)
+```
+```{r}
+cutree(hc, k = 2)
+```
+
+
+
+# Principal Component Analysis (PCA)
+
+the main function for PCA in base R for PCA is called `prcopm()`. There are many, many add on packages with PCA functions tailored to particular data types (RNSASeq, protein, structures, metagenomica, etc...)
+
+## PCA of UK food data
+
+Read the data into R, it is a CSV file and we can use `read.csv()` to read it: 
+
+```{r}
+url <- "https://tinyurl.com/UK-foods"
+x <- read.csv(url)
+x
+```
+
+
+I would like the food names as row names not as their own column of data
+
+```{r}
+rownames(x) <- x[,1]
+x <- x[,-1]
+x
+```
+
+A better way to do this is to do it at the same time of data import with `read.csv()`
+
+```{r}
+food <-  read.csv(url, row.names =1)
+food
+```
+
+
+Let's make some plots and dig into the data a little. 
+
+```{r}
+barplot(as.matrix(x), beside=T, col=rainbow(nrow(food)))
+```
+```{r}
+ barplot(as.matrix(x), beside=F, col=rainbow(nrow(food)))
+```
+
+```{r}
+barplot(as.matrix(x), beside=T, col=rainbow(nrow(food)))
+```
+
+How about a "pairs" plot where we plot each country against all other countries. 
+```{r}
+pairs(food, col=rainbow(nrow(food)), pch=16)
+```
+
+Really there has to be a better way......
+
+
+## PCA to the rescue!
+
+We can run a Principal Component Analysis (PCA). We ned to take the transpose to get the foods in the columns and the countries in the rows 
+
+```{r}
+pca <- prcomp(t(food))
+summary(pca)
+```
+
+What is in my `pca` results object?
+
+```{r}
+attributes(pca)
+```
+
+
+```{r}
+pca$x
+```
+
+
+To make my main result figure, often called a PC plot (or score olot, oridenation plot, or PC1 vs PC2 plot)
+
+```{r}
+plot(pca$x[,1], pca$x[,2], xlab = "PC1", ylab = "PC2", col = c("orange", "red", "blue", "darkgreen"), pch = 16)
+```
+
+To see the contributions of the origional variables (foods) to these new PCs we can look at the `pca$rotation` component of our results
+
+```{r}
+pca$rotation
+```
+
+```{r}
+library(ggplot2)
+loadings <-  as.data.frame(pca$rotation)
+
+loadings$name <- rownames(loadings)
+
+ggplot(loadings) + aes(PC1, name) + geom_col()
+```
+```{r}
+loadings <-  as.data.frame(pca$rotation)
+
+loadings$name <- rownames(loadings)
+
+ggplot(loadings) + aes(PC2, name) + geom_col()
+```
+
+
+```{r}
+loadings <- as.data.frame(pca$x)
+loadings_lab <- tibble::rownames_to_column(loadings, "Country")
+
+ggplot(loadings_lab) + 
+  aes(PC1, PC2, col=Country) + 
+  geom_point()
+```
+
