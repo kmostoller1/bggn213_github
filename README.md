@@ -6,3 +6,5 @@ winter 2025 class content:
 - Class 04: Intro to R
 
 - Class 05: Data viz with ggplot2
+
+- Class 06: R Functions
