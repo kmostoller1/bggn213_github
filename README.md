@@ -21,7 +21,7 @@ winter 2025 class content:
 
 - Class 12: [Alpha fold and structural prediction](https://github.com/kmostoller1/bggn213_github/blob/main/Class12/AlphaFold%20Analysis%20class%2012.pdf)
 
-- Class 13: [Transcriptomics, RNA-Seq analysis, and the interpretation of gene lists]
+- Class 13: [Transcriptomics, RNA-Seq analysis, and the interpretation of gene lists](https://github.com/kmostoller1/bggn213_github/blob/main/Class13/Class-13.pdf)
 
-- Class 14: [RNA-Seq mini project]
+- Class 14: [RNA-Seq mini project](https://github.com/kmostoller1/bggn213_github/blob/main/Class14/Class-14.pdf)
 
