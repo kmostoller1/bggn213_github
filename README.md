@@ -3,9 +3,9 @@ My classwork from [bggn213](https://bioboot.github.io/bggn213_W25/) w25 at uc sa
 
 winter 2025 class content:
 
-- Class 04: Intro to R
+- Class 04: [Intro to R](https://github.com/kmostoller1/bggn213_github/blob/main/class04/class4.pdf)
 
-- Class 05: Data viz with ggplot2
+- Class 05: [Data viz with ggplot2](https://github.com/kmostoller1/bggn213_github/blob/main/class05/Class05.pdf)
 
 - Class 06: [R Functions](https://github.com/kmostoller1/bggn213_github/blob/main/Class06/Class6.pdf)
 
