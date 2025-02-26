@@ -15,9 +15,15 @@ winter 2025 class content:
 
 - Class 09: Halloween candy mini project
 
-- Class 10:
+- Class 10: Structural Bioinformatics
 
-- Class 11:
+- Class 11: Genome Informatics
+
+- Class 12: Alpha fold and structural prediction
+
+- Class 13: Transcriptomics, RNA-Seq analysis, and the interpretation of gene lists
+
+- Class 14: RNA-Seq mini project
 
 - Class 12:
 
