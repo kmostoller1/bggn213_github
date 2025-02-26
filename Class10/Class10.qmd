@@ -1,0 +1,182 @@
+---
+title: "Class10"
+author: "Katie Mostoller A17259578"
+format: pdf
+toc: true
+---
+
+# The PDB database
+
+The main repositroy for biomolecular data is called the PDB (Protein DAta Bank) and can be found at: https://www.rcsb.org/
+
+Let's see what it contains in terms of type of molecule and method of structure determination
+
+(analyze > PDB stats > By mol type and method > downlaod csv)
+
+
+```{r}
+pdb_stats <- read.csv("Data Export Summary.csv")
+pdb_stats
+```
+
+>Q1: What percentage of structures in the PDB are solved by X-Ray and EM.
+
+```{r}
+no_comma_xray <- sub(",", "", pdb_stats$X.ray)
+sum(as.numeric(no_comma_xray))
+
+```
+Let's try the **readr** package and it's never `read.csv()` function
+
+```{r}
+library(readr)
+
+pdb_stats <- read_csv("Data Export Summary.csv")
+pdb_stats
+```
+
+The resulting column names are "untidy" with spaces and a mix of upper and lower case letters that will make working with the column a pain. We can use the **janitor** package and it's `clean_names()` function to fix this. 
+
+```{r}
+colnames(pdb_stats)
+```
+```{r}
+library(janitor)
+df <- clean_names(pdb_stats)
+df
+```
+
+Percent of structures in PDB solved by Xray?
+
+```{r}
+n.xray <- sum(df$x_ray)
+n.total <- sum(df$total)
+n.xray
+n.total
+```
+
+In UniProt there are 253,206,171 protein sequences and there are only 231,029 known structures in the PDB. This is a tiny fraction!
+
+```{r}
+231029/253206171*100
+```
+
+Next day we will see how bioinformatics methods can help predict structure from sequence with accuracy approaching X-ray methods
+
+```{r}
+n.xray/n.total*100
+```
+
+
+Now find the percent of structures solved via EM
+```{r}
+n.em <- sum(df$em)
+n.em/n.total*100
+```
+
+
+>Q2: What proportion of structures in the PDB are protein?
+
+```{r}
+round(df$total[1]/n.total*100, digits=2)
+```
+
+## 2. Molefucular visualization with Mol*
+
+Mol-star is a new online structure viewer that is taking overthe world of biomolecular visualization. Let's see how to use it from https://molstar.org/viewer/
+
+![Fig 1. A first view of the HIV-pr dimer](1HSG.png)
+
+I want an image that shows the binding cleft for the MK1 inhibitor, an imae of the most valuable water in human history, and an image showing the catalytic ASP amino acid
+
+
+![Fig 2. Binding Cleft](1HSG(3).png)
+
+![Fig 3. Water 308 and the 2 catalytic ASP](1HSG (2).png)
+
+![Fig 4. Water 308 closer up](1HSG(4).png)
+
+## 3. Using Bio3D package
+
+This package has tons of tools and utilities for structual bioinformatics.
+
+```{r}
+library(bio3d)
+
+hiv <- read.pdb("1hsg")
+hiv
+```
+
+```{r}
+head(hiv$atom)
+```
+
+you can use `pdbseq()` to see the amino acid sequence of the protien 
+```{r}
+s <- pdbseq(hiv)
+head(s)
+```
+How to find out length of amino acid sequence
+```{r}
+length(s)
+```
+
+## Predict the functional motions
+
+Let's read a new structure "6s36"
+
+```{r}
+pdb <- read.pdb("6s36")
+pdb
+```
+
+We can run an NMA calculation on this structure:
+
+```{r}
+m <- nma(pdb)
+plot(m, sse =pdb)
+```
+
+
+We can write out a wee trajectory of the predicted dynamics using the `mktrj()` function
+
+```{r}
+mktrj(m, file="results.pdb")
+```
+
+Then upload the file to molstar and press play button to see an animation of the protien's predicted motion
+
+## Comparative analysis
+
+```{r}
+aa <- get.seq("1ake_A")
+aa
+```
+```{r}
+blast <- blast.pdb(aa)
+hits <- plot(blast)
+```
+
+```{r}
+hits
+```
+```{r}
+head(blast$raw)
+```
+
+Download all these structures to our project dir
+```{r}
+# Download related PDB files
+files <- get.pdb(hits$pdb.id, path="pdbs", split=TRUE, gzip=TRUE)
+```
+## Align and superimpose
+
+```{r}
+pdbs <- pdbaln(files, fit = TRUE, exefile="msa")
+pc.xray <- pca(pdbs)
+plot(pc.xray)
+```
+```{r}
+plot(pc.xray, pc.axes = c(1,2))
+```
+

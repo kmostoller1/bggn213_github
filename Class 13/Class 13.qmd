@@ -1,0 +1,347 @@
+---
+title: "Class 13: RNA Seq Intro"
+author: "Katie Mostoller A17259578"
+format: pdf
+toc: true
+---
+
+In today's class we will analyze some published RNA-seq experiments where airway smooth muscle cells were treated with dexamethasone, a synthetic glucocorticoid steroid with anti-inflammatory effects (Himes et al. 2014).
+
+We will use the **DESeq2** package for the heavy lifting in a little bit, but first let's read the data and get to know how things work.
+
+## Data import
+
+Therea are two datasets that I need for this type of analysis: 
+- **contData**: the transcript abundances (i.e. read counts per gene)
+- **colData**: metadata about the columns in the countData (i.e. exerimental setup)
+
+```{r}
+counts <- read.csv("airway_scaledcounts.csv", row.names = 1)
+metadata <- read.csv("airway_metadata.csv")
+head(counts)
+head(metadata)
+```
+
+>Q1. How many genes are in this dataset? 
+
+
+```{r}
+nrow(counts)
+```
+
+
+
+
+>Q2. How many ‘control’ cell lines do we have?
+
+```{r}
+table(metadata$dex)
+```
+
+```{r}
+sum(metadata$dex =="control")
+```
+
+
+```{r}
+all(colnames(counts) == metadata$id)
+```
+
+
+## Mean counts per condition
+
+Let's find the average gene counts for control and treated conditions (i.e. columns)
+
+- extract all "control" columns/experiments
+- find the row average for these columns
+
+
+```{r}
+control.inds <- metadata$dex == "control"
+control.counts <- counts[,control.inds]
+control.mean <- rowMeans(control.counts)
+```
+
+
+Now do the same for the "treated" clumns to produce `treated.mean`
+
+```{r}
+treated.inds <- metadata$dex == "treated"
+treated.counts <- counts[,treated.inds]
+treated.mean <- rowMeans(treated.counts)
+```
+
+
+Let's store these mean values all i one data.frame
+
+```{r}
+meancounts <- data.frame(control.mean, treated.mean)
+head(meancounts)
+```
+
+
+Make a plot of control vs treated
+
+
+```{r}
+plot(meancounts, log = "xy")
+```
+
+
+```{r}
+library(ggplot2)
+
+ggplot(meancounts) + 
+       aes(control.mean, treated.mean) +
+       geom_point(alpha = 0.3)
+```
+
+
+## Log fold change
+
+We most often work in log2 units because the interpretation is more straightforward. 
+
+
+```{r}
+log2(20/20)
+```
+When both groups have the same gene expression change, it log2 gives us an answer of 0!
+
+
+```{r}
+log2(20/40)
+```
+
+```{r}
+log2(40/20)
+```
+
+
+
+Calculate log2 fold change (`log2fc`) for treated /control
+
+
+```{r}
+meancounts$log2fc <- log2(meancounts$treated.mean / meancounts$control.mean)
+head(meancounts)
+```
+
+
+There are some weird numbers in the log2fc values like -Inf and NaN because there are zero count genes in our table. We need to filter these out (i.e. remove them) before going any further
+
+
+
+```{r}
+to.keep <- rowSums(meancounts[,1:2] == 0) == 0
+mycounts <- meancounts[to.keep, ]
+```
+
+>Q. How many genes do we have left?
+
+```{r}
+nrow(mycounts)
+```
+
+>Q. How many genes are upregulated at a log2fc>2?
+
+```{r}
+sum(mycounts$log2fc >= 2)
+```
+
+
+>Q.How many genes are downregulated at a log2fc>2?
+
+
+```{r}
+sum(mycounts$log2fc <= -2)
+```
+>Q. Do we trust these results?
+
+We don't know the significance of these results yet
+
+
+
+## DESeq analysis
+
+To do the analysis properly we can use the bioconductor package **DESeq2**:
+
+```{r}
+#| message: false
+
+library(DESeq2)
+```
+
+Like most BioConductor packages, DESeq wants it's input in a very particular format
+
+
+```{r}
+dds <- DESeqDataSetFromMatrix(countData = counts,
+                              colData = metadata,
+                              design = ~dex)
+```
+
+
+
+```{r}
+dds <- DESeq(dds)
+```
+```{r}
+res <- results(dds)
+head(res)
+```
+
+
+### Save Results
+
+
+Save our results to CSV file:
+
+```{r}
+write.csv(res, file = "myresults.csv")
+```
+
+
+### Volcano Plot
+
+Let's make a common summary plot of our results. Our main results here are the log 2 fold change (log2FoldChange) and correspomding adjusted p value (padj)
+
+```{r}
+plot(res$log2FoldChange, res$padj)
+```
+
+
+
+We need to transform the P-value axis so we can see the daat we actually care about (small P-values)
+
+```{r}
+plot(res$log2FoldChange, log(res$padj))
+```
+
+
+
+
+
+To makes folks happy, we need to flip the y-axis so the most significant values are at the top of the graph
+
+
+
+```{r}
+plot(res$log2FoldChange, -log(res$padj))
+```
+
+This is our standard volcano plot - let's make this nicer in ggplot. We can use color to highlight the most important subset of transcripts with a log2FC > +2 or < -2 that have a P-value < 0.05. We will need a custom color vector for this `mycols`
+
+```{r}
+mycols <- rep("grey", nrow(res))
+mycols[res$log2FoldChange >= 2] <- "blue"
+mycols[res$log2FoldChange <= -2] <- "blue"
+mycols[res$padj > 0.005] <- "grey"
+```
+
+
+```{r}
+ggplot(res)+
+  aes(log2FoldChange, -log(padj)) +
+  geom_point(col = mycols) +
+  labs(itle = "Summary Volcano Plot") +
+  xlab("Log2 Fold-Change") +
+  ylab("-Log Adjusted P-Value") +
+    theme_bw() +
+geom_vline(xintercept = c(-2,2), color = "darkgray") +
+geom_hline(yintercept = -log(0.005), color = "darkgray")
+```
+
+
+# Adding annotation data
+
+At the minute all we know about the genes in our dataset is their ENSEMBL database id
+
+```{r}
+head(row.names(res))
+```
+
+We can use a set of BioConductor packages to map these ENSEMBL ids to things like GENE SYMBOL, REFSEQ id, ENTREZ id etc. In oher words what each gene is called is different databses that I might want to use for further analysis 
+
+
+
+Install these packages with `BioManagerr:: install()` first
+
+```{r}
+library("AnnotationDbi")
+library("org.Hs.eg.db")
+```
+The different formats that I can convert IDs between include: 
+
+```{r}
+columns(org.Hs.eg.db)
+```
+
+
+We can use the `mapIds()` function to do this "mapping"/conversion:
+
+```{r}
+res$symbol <- mapIds(org.Hs.eg.db,
+                     keys=row.names(res), # Our genenames
+                     keytype="ENSEMBL", # The format of our genenames
+                     column="SYMBOL", # The new format we want to add
+                     multiVals="first")
+res$genename <- mapIds(org.Hs.eg.db,
+                     keys=row.names(res), 
+                     keytype="ENSEMBL", 
+                     column="GENENAME", # The new format we want to add
+                     multiVals="first")
+res$entrez <- mapIds(org.Hs.eg.db,
+                     keys=row.names(res), 
+                     keytype="ENSEMBL", 
+                     column="ENTREZID", # The new format we want to add
+                     multiVals="first")
+head(res)
+```
+
+
+Save results again!
+
+```{r}
+write.csv(res, file = "myresults_annotated.csv")
+```
+
+
+
+## Pathway Analysis
+
+Let's use KEGG (kyoto encyclopedia of genes and genomes) to see which pathways my gene sets overlap with - i.e. highlight the biology that may be influenced by the dex drug treatment.
+
+We will use the following packages: BiocManager::install(c("pathview", "gage", "gageData"))
+
+```{r}
+library(pathview)
+library(gage)
+library(gageData)
+
+data(kegg.sets.hs)
+```
+
+The **gage()** function wants as input a "named vector of importance"
+
+```{r}
+foldchanges = res$log2FoldChange
+names(foldchanges) = res$entrez
+head(foldchanges)
+```
+
+```{r}
+keggres <- gage(foldchanges, gsets = kegg.sets.hs)
+head(keggres$less)
+```
+
+We can have a quick look at one of the highlighted pathways e.g. hsa05310
+
+
+```{r}
+pathview(gene.data=foldchanges, pathway.id="hsa05310")
+```
+
+![](hsa05310.pathview.png)
+
+
+

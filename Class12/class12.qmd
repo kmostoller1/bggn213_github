@@ -1,0 +1,118 @@
+---
+title: "AlphaFold Analysis"
+author: "Katie Mostoller A17259578"
+format: html
+---
+
+Here we demonstrate how to analyze and make sense of models from AlphaFold. We begin by reading all the model PDB files...
+
+
+```{r}
+library(bio3d)
+```
+
+```{r}
+files <- list.files("hiv_monomer_94b5b/", pattern = ".pdb", full.names = T)
+```
+
+Align and superpose
+
+```{r}
+pdbs <- pdbaln(files, fit = TRUE, exefile= "msa")
+```
+
+RMSD analysis
+
+```{r}
+rd <- rmsd(pdbs)
+mean(rd)
+```
+
+
+```{r}
+source("https://tinyurl.com/newviewngl")
+library(NGLVieweR)
+view.pdbs(pdbs)
+```
+
+```{r}
+pc <- pca.pdbs(pdbs)
+  plot(pc)
+```
+
+
+
+
+
+
+# Residue conservation from alignment file
+
+```{r}
+aln_file <- list.files(path = "hiv_monomer_94b5b/",
+                       pattern = ".a3m$",
+                       full.names = TRUE)
+aln_file
+```
+
+```{r}
+aln <- read.fasta(aln_file, to.upper = TRUE)
+```
+
+```{r}
+dim(aln$ali)
+```
+Score residue conservation
+```{r}
+sim <- conserv(aln)
+```
+
+```{r}
+con <- consensus(aln, cutoff = 0.9)
+con$seq
+```
+
+
+
+
+```{r}
+pdb <- read.pdb(files[1])
+```
+
+```{r}
+plot(sim, type = "h")
+```
+
+
+```{r}
+pdb <- read.pdb(files[1])
+
+view.pdb(pdb, backgroundColor = "pink",
+         highlight = atom.select(pdb, resno = 25:28))
+```
+
+
+
+Now do with my novel protein 
+
+```{r}
+files <- list.files("novel protein/", pattern = ".pdb", full.names = T)
+```
+
+```{r}
+pdbs <- pdbaln(files, fit = TRUE, exefile= "msa")
+```
+
+```{r}
+rd <- rmsd(pdbs)
+mean(rd)
+```
+```{r}
+source("https://tinyurl.com/newviewngl")
+library(NGLVieweR)
+view.pdbs(pdbs)
+```
+```{r}
+pc <- pca.pdbs(pdbs)
+  plot(pc)
+```
+
