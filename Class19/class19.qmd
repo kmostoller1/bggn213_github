@@ -1,0 +1,105 @@
+---
+title: "Class19"
+author: "Katie Mostoller"
+format: html
+---
+
+
+```{r}
+library(bio3d)
+```
+
+```{r}
+seq <- read.fasta("~/Downloads/result (2).fasta")
+```
+
+```{r}
+blastresults <- blast.pdb(seq)
+```
+```{r}
+head(blastresults)
+```
+
+```{r}
+seqmut <- read.fasta("~/Downloads/result (1).fasta")
+```
+
+```{r}
+blastresultsmut <- blast.pdb(seqmut)
+```
+```{r}
+head(blastresultsmut)
+```
+
+Now determine the mutation
+
+```{r}
+head(seq)
+```
+
+```{r}
+wt <- seq$ali
+mutant <- seqmut$ali
+```
+
+```{r}
+alignment <- seqaln(wt, mutant)
+```
+```{r}
+s <- read.fasta("~/Downloads/A17259578_mutant_seq.fa")
+s
+```
+
+```{r}
+score <- conserv(s)
+inds <- score !=1
+positions <- which(inds)
+positions
+```
+
+```{r}
+s$ali[,positions]
+```
+
+formatting
+```{r}
+paste (s$ali[1,positions], positions, s$ali[2,positions], sep = "")
+```
+
+Now try with a different set of aligned aa sequences and combine all of the steps (reading the file to identifying the mutations) into one code chunk 
+
+```{r}
+x <- read.fasta("~/Downloads/A69038031_mutant_seq.fa")
+score <- conserv(x)
+inds <- score !=1
+positions <- which(inds)
+paste (x$ali[1,positions], positions, x$ali[2,positions], sep = "")
+```
+
+Can also do it without downloading the file
+
+```{r}
+infile <- "https://bioboot.github.io/bggn213_W25/class-material/lab19_sequences/A69038031_mutant_seq.fa"
+x <- read.fasta(infile)
+score <- conserv(x)
+inds <- score !=1
+positions <- which(inds)
+paste (x$ali[1,positions], positions, x$ali[2,positions], sep = "")
+```
+
+
+
+```{r}
+pdb <- read.pdb("7MO7")
+```
+```{r}
+head(pdb)
+```
+
+
+```{r}
+domains <- pdb$atom[, c("resno", "chain", "resid")]
+mutation_domains <- merge(mutations, domains, by.x = "position", by.y = "resno")
+print(mutation_domains)
+```
+
