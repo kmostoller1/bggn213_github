@@ -1,5 +1,5 @@
 logo: https://bioboot.github.io/bggn213_W25/assets/img/logo.png
 title: Bioinformatics 
-remote_theme: pages-themes/cayman@v0.2.0
+remote_theme: pages-themes/hacker@v0.2.0
 plugins:
-- jekyll-remote-theme # add this line to the plugins list if you already have on
+- jekyll-remote-theme
