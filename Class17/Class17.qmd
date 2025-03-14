@@ -1,0 +1,88 @@
+---
+title: "Class17"
+author: "Katie Mostoller A17259578"
+format: pdf
+---
+
+# Downstream analysis
+
+```{r}
+folders <- list.files(pattern = "SRR")
+files <- paste0(folders, "/abundance.h5")
+```
+
+```{r}
+file.exists(folders)
+```
+```{r}
+names(files) <- sub("_quant", "", folders)
+files
+```
+
+
+Load up the tximport package
+```{r}
+library(tximport)
+
+txi.kallisto <- tximport(files, type = "kallisto", txOut = TRUE)
+```
+
+# Remove zero count genes
+
+```{r}
+to.keep <- rowSums(txi.kallisto$counts) > 0
+kset.nonzero <- txi.kallisto$counts[to.keep,]
+```
+
+```{r}
+nrow(kset.nonzero)
+```
+
+```{r}
+keep2 <- apply(kset.nonzero,1,sd)>0
+x <- kset.nonzero[keep2,]
+```
+
+
+# Try a PCA analysis
+
+```{r}
+pca <- prcomp(t(x), scale = TRUE)
+summary(pca)
+```
+
+```{r}
+library(ggplot2)
+library(ggrepel)
+mycols <- c("blue","blue","red","red")
+ggplot(pca$x) +
+  aes(x = PC1, y = PC2) +
+  geom_point(col = mycols) +
+  geom_label_repel(label = rownames(pca$x), col = mycols)
+```
+
+#DESeq Analysis
+
+```{r}
+library(DESeq2)
+sampleTable <- data.frame(condition = factor(rep(c("control", "treatment"), each = 2)))
+rownames(sampleTable) <- colnames(txi.kallisto$counts)
+sampleTable
+
+```
+
+```{r}
+dds <- DESeqDataSetFromTximport(txi.kallisto,
+                                sampleTable, 
+                                ~condition)
+```
+
+```{r}
+dds <- DESeq(dds)
+```
+
+```{r}
+res <- results(dds)
+head(res)
+```
+
