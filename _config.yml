@@ -1,4 +1,4 @@
-title: Bioinformatics ![](https://bioboot.github.io/bggn213_W25/assets/img/logo.png)
+title: Bioinformatics
 remote_theme: pages-themes/hacker@v0.2.0
 plugins:
 - jekyll-remote-theme
